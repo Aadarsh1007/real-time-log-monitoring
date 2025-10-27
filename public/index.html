@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Log Viewer</title>
+</head>
+<body>
+  <h2>Real-Time Log Monitor</h2>
+  <label>Select Service: </label>
+  <select id="service">
+    <option value="auth-service">auth-service</option>
+    <option value="payment-service">payment-service</option>
+    <option value="core-service">core-service</option>
+  </select>
+  <button id="subscribe">Subscribe</button>
+  <pre id="logs"></pre>
+
+  <script>
+    const ws = new WebSocket("ws://localhost:3000");
+    const logsDiv = document.getElementById("logs");
+    const serviceSelected = document.getElementById("service");
+    const subButton = document.getElementById("subscribe");
+
+    ws.onmessage = (event) => {
+      try {
+        const log = JSON.parse(event.data);
+        logsDiv.textContent += `[${log.timestamp}] ${log.service.toUpperCase()} - ${log.type}: ${log.message}\n`;
+      } catch (e) {
+        logsDiv.textContent += event.data + "\n";
+      }
+    };
+
+    subButton.onclick = () => {
+      const service = serviceSelected.value;
+      ws.send(JSON.stringify({ subscribe: service }));
+    };
+  </script>
+</body>
+</html>
